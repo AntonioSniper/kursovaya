@@ -1,0 +1,11 @@
+CREATE TRIGGER IF NOT EXISTS trg_order_items_after_delete_recalc_order_total
+AFTER DELETE ON order_items
+BEGIN
+    UPDATE orders
+    SET total_amount = COALESCE((
+        SELECT SUM(quantity * price)
+        FROM order_items
+        WHERE order_id = OLD.order_id
+    ), 0)
+    WHERE id = OLD.order_id;
+END;

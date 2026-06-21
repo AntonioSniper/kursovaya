@@ -1,0 +1,11 @@
+CREATE TRIGGER IF NOT EXISTS trg_order_items_after_insert_recalc_order_total
+AFTER INSERT ON order_items
+BEGIN
+    UPDATE orders
+    SET total_amount = COALESCE((
+        SELECT SUM(quantity * price)
+        FROM order_items
+        WHERE order_id = NEW.order_id
+    ), 0)
+    WHERE id = NEW.order_id;
+END;
